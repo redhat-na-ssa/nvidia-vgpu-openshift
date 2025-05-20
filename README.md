@@ -151,6 +151,30 @@ $ oc get nodes ip-10-0-2-117.us-east-2.compute.internal -o json | jq .status.all
 }
 ```
 
+## Configure OpenShift virtualization
+
+### Modify Hyperconverged object
+
+The `resourceName` should correspond to the name of the resource from the allocatable resources, in this example `nvidia.com/GRID_T4-8Q`
+
+```
+apiVersion: hco.kubevirt.io/v1beta1
+kind: HyperConverged
+spec:
+  featureGates:
+    disableMDevConfiguration: true
+  permittedHostDevices:
+    mediatedDevices:
+    - externalResourceProvider: true
+      mdevNameSelector: GRID T4-8Q
+      resourceName: nvidia.com/GRID_T4-8Q
+```
+
+After which, you should be able to create or modify a VM and add a GPU device.
+
+## Other Verification and Debugging steps
+
+
 
 #### Driver version
 Ensure that the NVIDIA GPU drivers are the correct version
@@ -200,24 +224,3 @@ f5:00.0 3D controller [0302]: NVIDIA Corporation TU104GL [Tesla T4] [10de:1eb8] 
         Subsystem: NVIDIA Corporation Device [10de:12a2]
         Kernel driver in use: nvidia
 ```
-
-## Configure OpenShift virtualization
-
-### Modify Hyperconverged object
-
-The `resourceName` should correspond to the name of the resource from the allocatable resources, in this example `nvidia.com/GRID_T4-8Q`
-
-```
-apiVersion: hco.kubevirt.io/v1beta1
-kind: HyperConverged
-spec:
-  featureGates:
-    disableMDevConfiguration: true
-  permittedHostDevices:
-    mediatedDevices:
-    - externalResourceProvider: true
-      mdevNameSelector: GRID T4-8Q
-      resourceName: nvidia.com/GRID_T4-8Q
-```
-
-After which, you should be able to create or modify a VM and add a GPU device.
