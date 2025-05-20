@@ -39,12 +39,12 @@ Local requirements:
 * podman
 
 ```bash
-$ git clone https://gitlab.com/nvidia/container-images/driver
-$ cd driver/vgpu-manager/rhel8/
-$ cp path/to/NVIDIA-Linux-x86_64-<version>-vgpu-kvm.run .
+git clone https://gitlab.com/nvidia/container-images/driver
+cd driver/vgpu-manager/rhel8/
+cp path/to/NVIDIA-Linux-x86_64-<version>-vgpu-kvm.run .
 
 # the DRIVER_VERSION buildarg is from driver filename: NVIDIA-Linux-x86_64-570.133.10-vgpu-kvm.run
-$ podman build --build-arg DRIVER_VERSION=570.133.10 -t nvidia-driver:latest .
+podman build --build-arg DRIVER_VERSION=570.133.10 -t nvidia-driver:latest .
 ```
 
 ### (Optional) Push to internal registry
@@ -54,11 +54,11 @@ Once we have the container image we can use the OpenShift image registry to host
 In the example we are using the driver version and the version of OpenShift in the tag in the form "driver_version-rhcos_version": `570.133.10-rhcos4.18`
 
 ```bash
-$ oc login https://api.cluster.example.com:6443 --username admin
-$ oc registry login
+oc login https://api.cluster.example.com:6443 --username admin
+oc registry login
 
-$ podman tag nvidia-driver:latest image-registry.openshift-image-registry.svc:5000/nvidia-gpu-operator/vgpu-manager:570.133.10-rhcos4.18
-$ podman push --tls-verify=false image-registry.openshift-image-registry.svc:5000/nvidia-gpu-operator/vgpu-manager:570.133.10-rhcos4.18
+podman tag nvidia-driver:latest image-registry.openshift-image-registry.svc:5000/nvidia-gpu-operator/vgpu-manager:570.133.10-rhcos4.18
+podman push --tls-verify=false image-registry.openshift-image-registry.svc:5000/nvidia-gpu-operator/vgpu-manager:570.133.10-rhcos4.18
 ```
 
 ## Deploy GPU Operator
@@ -73,13 +73,19 @@ If the workload label was unset or set incorrectly you will have to remove the k
 (from the NVIDIA documentation)
 > If the node label nvidia.com/gpu.workload.config does not exist on the node, the GPU Operator assumes the default GPU workload configuration, container, and deploys the software components needed to support this workload type. To change the default GPU workload configuration, set the following value in ClusterPolicy: .sandboxWorkloads.defaultWorkload=<config>.
 
-```
+```bash
 oc label node ip-10-0-2-117.us-east-2.compute.internal --overwrite nvidia.com/gpu.workload.config=vm-vgpu
+```
+```
 node/ip-10-0-2-117.us-east-2.compute.internal labeled
 ```
 
+Check the full list of nodes for the labels, in this case only the first node will be set up for vGPU, the rest will get the standard container-based workload support for GPUs
+
+```bash
+oc get nodes -o custom-columns=Name:.metadata.name,GPU:.metadata.labels.'nvidia\.com/gpu\.workload\.config'
 ```
-$ oc get nodes -o custom-columns=Name:.metadata.name,GPU:.metadata.labels.'nvidia\.com/gpu\.workload\.config'
+```
 Name                                        GPU
 ip-10-0-2-117.us-east-2.compute.internal    vm-vgpu
 ip-10-0-42-92.us-east-2.compute.internal    <none>
@@ -135,7 +141,9 @@ spec:
 #### Check the node is advertising GPUs
 
 ```bash
-$ oc get nodes ip-10-0-2-117.us-east-2.compute.internal -o json | jq .status.allocatable
+oc get nodes ip-10-0-2-117.us-east-2.compute.internal -o json | jq .status.allocatable
+```
+```json
 {
  "cpu": "95500m",
  "devices.kubevirt.io/kvm": "1k",
@@ -157,7 +165,7 @@ $ oc get nodes ip-10-0-2-117.us-east-2.compute.internal -o json | jq .status.all
 
 The `resourceName` should correspond to the name of the resource from the allocatable resources, in this example `nvidia.com/GRID_T4-8Q`
 
-```
+```yaml
 apiVersion: hco.kubevirt.io/v1beta1
 kind: HyperConverged
 spec:
@@ -181,6 +189,8 @@ Ensure that the NVIDIA GPU drivers are the correct version
 
 ```bash
 $ oc debug node/ip-10-0-2-117.us-east-2.compute.internal
+```
+```
 Starting pod/ip-10-0-2-117us-east-2computeinternal-debug-pk9mk ...
 To use host binaries, run `chroot /host`
 Pod IP: 10.0.2.117
@@ -192,7 +202,9 @@ $ cat /sys/module/nvidia/version
 #### Check PCI cards are present
 
 ```
-$ oc debug node/ip-10-0-2-117.us-east-2.compute.internal
+oc debug node/ip-10-0-2-117.us-east-2.compute.internal
+```
+```
 Starting pod/ip-10-0-2-117us-east-2computeinternal-debug-pk9mk ...
 To use host binaries, run `chroot /host`
 Pod IP: 10.0.2.117
