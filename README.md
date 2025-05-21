@@ -11,7 +11,6 @@ This repository has been tested on:
   * NVIDIA Driver 570.133.10
   * NVIDIA T4 GPU (AWS instance [g4dn.metal](https://instances.vantage.sh/aws/ec2/g4dn.metal))
 
-
 ## Prerequisites
 
 The NVIDIA vGPU software needs to be obtained from the [NVIDIA Licensing Portal](https://nvid.nvidia.com/dashboard/#/dashboard):
@@ -27,7 +26,6 @@ The NVIDIA vGPU software needs to be obtained from the [NVIDIA Licensing Portal]
 >
 > NVIDIA AI Enterprise customers must use the aie .run file for building the NVIDIA vGPU Manager image. Download the NVIDIA-Linux-x86_64-<version>-vgpu-kvm-aie.run file instead, and rename it to NVIDIA-Linux-x86_64-<version>-vgpu-kvm.run before proceeding with the rest of the procedure.
 
-
 ## Instructions
 
 ### Build Driver image on local machine
@@ -37,6 +35,7 @@ Disconnected vgpu-manager [build documentation](DISCONNECTED-vgpu-manager.md)
 Since we need the proprietary drivers from NVIDIA, the easiest way to get started is by building the container image locally
 
 Local requirements:
+
 * git
 * podman
 
@@ -75,26 +74,25 @@ If the workload label was unset or set incorrectly you will have to remove the k
 (from the NVIDIA documentation)
 > If the node label nvidia.com/gpu.workload.config does not exist on the node, the GPU Operator assumes the default GPU workload configuration, container, and deploys the software components needed to support this workload type. To change the default GPU workload configuration, set the following value in ClusterPolicy: .sandboxWorkloads.defaultWorkload=<config>.
 
-```bash
+```sh
 oc label node ip-10-0-2-117.us-east-2.compute.internal --overwrite nvidia.com/gpu.workload.config=vm-vgpu
 ```
-```
+
+```sh
 node/ip-10-0-2-117.us-east-2.compute.internal labeled
 ```
 
 Check the full list of nodes for the labels, in this case only the first node will be set up for vGPU, the rest will get the standard container-based workload support for GPUs
 
-```bash
+```sh
 oc get nodes -o custom-columns=Name:.metadata.name,GPU:.metadata.labels.'nvidia\.com/gpu\.workload\.config'
 ```
-```
+
+```sh
 Name                                        GPU
 ip-10-0-2-117.us-east-2.compute.internal    vm-vgpu
 ip-10-0-42-92.us-east-2.compute.internal    <none>
 ip-10-0-5-156.us-east-2.compute.internal    <none>
-ip-10-0-58-169.us-east-2.compute.internal   <none>
-ip-10-0-69-161.us-east-2.compute.internal   <none>
-ip-10-0-78-66.us-east-2.compute.internal    <none>
 ```
 
 ### Install the vGPU manager image
@@ -106,7 +104,7 @@ ip-10-0-78-66.us-east-2.compute.internal    <none>
 
 Apply the ClusterPolicy in this repository
 
-```
+```sh
 oc apply -f clusterpolicy.yaml
 ```
 
@@ -122,7 +120,7 @@ Once installing the GPU operator, add a new ClusterPolicy and switch to YAML
 
 Find the settings listed below and make sure they are set, leave everything else as the default
 
-```
+```sh
 apiVersion: nvidia.com/v1
 kind: ClusterPolicy
 metadata:
@@ -142,9 +140,10 @@ spec:
 
 #### Check the node is advertising GPUs
 
-```bash
+```sh
 oc get nodes ip-10-0-2-117.us-east-2.compute.internal -o json | jq .status.allocatable
 ```
+
 ```json
 {
  "cpu": "95500m",
@@ -184,34 +183,48 @@ After which, you should be able to create or modify a VM and add a GPU device.
 
 ## Other Verification and Debugging steps
 
+### Driver version
 
-
-#### Driver version
 Ensure that the NVIDIA GPU drivers are the correct version
 
-```bash
-$ oc debug node/ip-10-0-2-117.us-east-2.compute.internal
+```sh
+oc debug node/ip-10-0-2-117.us-east-2.compute.internal
 ```
-```
+
+```sh
 Starting pod/ip-10-0-2-117us-east-2computeinternal-debug-pk9mk ...
 To use host binaries, run `chroot /host`
 Pod IP: 10.0.2.117
 If you don't see a command prompt, try pressing enter.
-$ cat /sys/module/nvidia/version
+```
+
+```sh
+cat /sys/module/nvidia/version
+```
+
+```output
 570.133.10
 ```
 
 #### Check PCI cards are present
 
-```
+```sh
 oc debug node/ip-10-0-2-117.us-east-2.compute.internal
 ```
-```
+
+```output
 Starting pod/ip-10-0-2-117us-east-2computeinternal-debug-pk9mk ...
 To use host binaries, run `chroot /host`
 Pod IP: 10.0.2.117
 If you don't see a command prompt, try pressing enter.
-sh-5.1# lspci -nnk -d 10de:
+sh-5.1# 
+```
+
+```sh
+lspci -nnk -d 10de:
+```
+
+```output
 18:00.0 3D controller [0302]: NVIDIA Corporation TU104GL [Tesla T4] [10de:1eb8] (rev a1)
         Subsystem: NVIDIA Corporation Device [10de:12a2]
         Kernel driver in use: nvidia
