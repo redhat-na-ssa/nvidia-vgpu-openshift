@@ -57,7 +57,7 @@ spec:
       waitForCompletion:
         timeoutSeconds: 0
     repoConfig:
-      configMapName: ''
+      configMapName: 'ubi-repo-mirror'
     virtualTopology:
       config: ''
   devicePlugin:
@@ -88,7 +88,7 @@ spec:
       maxUnavailable: '1'
     updateStrategy: RollingUpdate
   sandboxWorkloads:
-    defaultWorkload: container
+    defaultWorkload: vm-vgpu
     enabled: true
   gds:
     enabled: false

@@ -32,6 +32,8 @@ The NVIDIA vGPU software needs to be obtained from the [NVIDIA Licensing Portal]
 
 ### Build Driver image on local machine
 
+Disconnected vgpu-manager [build documentation](DISCONNECTED-vgpu-manager.md)
+
 Since we need the proprietary drivers from NVIDIA, the easiest way to get started is by building the container image locally
 
 Local requirements:
