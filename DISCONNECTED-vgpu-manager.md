@@ -15,6 +15,8 @@ git checkout -b vgpu-fixes origin/vgpu-fixes
 ## Get the driver-toolkit image for your cluster version
 
 ```sh
+# login to OpenShift or use the OpenShift web-terminal
+
 # oc get clusterversions
 # export OPENSHIFT_VERSION=4.16.40
 
