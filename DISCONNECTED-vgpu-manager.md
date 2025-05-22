@@ -32,7 +32,7 @@ export REGISTRY_AUTH_FILE=~/Downloads/pull-secret.txt
 ```
 
 ```sh
-podman run -v $(pwd):/work --workdir /work -it --rm $DRIVER_TOOLKIT /bin/bash
+podman run -v $(pwd):/work:z --workdir /work -it --rm $DRIVER_TOOLKIT /bin/bash
 ```
 
 In the container, download the required RPMs
@@ -46,5 +46,5 @@ exit
 ## Build the vgpu-manager image based on the driver version
 
 ```sh
-podman build --build-arg DRIVER_VERSION=570.133.10 -t vgpu-manager:latest .
+podman build --build-arg DRIVER_VERSION=550.127.06 -t vgpu-manager:latest .
 ```
