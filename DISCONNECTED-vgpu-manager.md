@@ -46,5 +46,5 @@ exit
 ## Build the vgpu-manager image based on the driver version
 
 ```sh
-podman build --build-arg DRIVER_VERSION=550.127.06 -t vgpu-manager:latest .
+podman build --build-arg DRIVER_VERSION=570.133.10 -t vgpu-manager:latest .
 ```
