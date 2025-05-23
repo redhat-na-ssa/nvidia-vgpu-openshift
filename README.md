@@ -186,6 +186,52 @@ After which, you should be able to create or modify a VM and add a GPU device.
 
 ## Other Verification and Debugging steps
 
+### Node labels
+
+Initially the gpu operator should label the node with:
+
+```
+"nvidia.com/gpu.deploy.cc-manager": "true",
+"nvidia.com/gpu.deploy.nvsm": "",
+"nvidia.com/gpu.deploy.sandbox-device-plugin": "true",
+"nvidia.com/gpu.deploy.sandbox-validator": "true",
+"nvidia.com/gpu.deploy.vgpu-device-manager": "true",
+"nvidia.com/gpu.deploy.vgpu-manager": "true",
+"nvidia.com/gpu.present": "true",
+```
+
+After everything installs it adds
+
+```
+"nvidia.com/vgpu.config.state": "success",
+```
+
+#### Delete the node labels to reset
+
+This is a bash function that removes all labels with the prefix `nvidia.com` from the node
+
+```
+node_cleanup() {
+  local NODE="$1"
+  oc get node "$NODE" -o go-template='{{range $key, $value := .metadata.labels}}{{if and (ge (len $key) 11) (eq (slice $key 0 11) "nvidia.com/")}}{{$key}}{{"\n"}}{{end}}{{end}}' | xargs -t -I {} oc label node "$NODE" {}-
+}
+
+node_cleanup <node-name>
+```
+
+### Pods
+
+The gpu operator should control four Daemonsets for deploying vGPU manager onto the node:
+
+```
+$ oc get ds -n nvidia-gpu-operator
+NAME                                                  NODE SELECTOR
+nvidia-sandbox-device-plugin-daemonset                nvidia.com/gpu.deploy.sandbox-device-plugin=true
+nvidia-sandbox-validator                              nvidia.com/gpu.deploy.sandbox-validator=true
+nvidia-vgpu-device-manager                            nvidia.com/gpu.deploy.vgpu-device-manager=true
+nvidia-vgpu-manager-daemonset-416.94.202505051351-0   feature.node.kubernetes.io/system-os_release.OSTREE_VERSION=416.94.202505051351-0,nvidia.com/gpu.deploy.vgpu-manager=true
+```
+
 ### Driver version
 
 Ensure that the NVIDIA GPU drivers are the correct version
@@ -220,7 +266,7 @@ Starting pod/ip-10-0-2-117us-east-2computeinternal-debug-pk9mk ...
 To use host binaries, run `chroot /host`
 Pod IP: 10.0.2.117
 If you don't see a command prompt, try pressing enter.
-sh-5.1# 
+sh-5.1#
 ```
 
 ```sh
