@@ -2,6 +2,9 @@
 
 This repository serves as a complement to the [NVIDIA documentation on vGPUs on OpenShift](https://docs.nvidia.com/datacenter/cloud-native/openshift/latest/openshift-virtualization.html) to make it easier to deploy the solution on a OpenShift cluster
 
+There are two ways to configure mediated devices in OpenShift, one is with the OpenShift Virtualization operator and the other is with the NVIDIA GPU operator, this doc focuses on the latter. [Docs steps for configuring with OpenShift Virtualization](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/virtualization/managing-vms#virt-options-configuring-mdevs_virt-configuring-virtual-gpus)
+
+
 ## Testing environment
 
 This repository has been tested on:
@@ -250,4 +253,16 @@ f4:00.0 3D controller [0302]: NVIDIA Corporation TU104GL [Tesla T4] [10de:1eb8] 
 f5:00.0 3D controller [0302]: NVIDIA Corporation TU104GL [Tesla T4] [10de:1eb8] (rev a1)
         Subsystem: NVIDIA Corporation Device [10de:12a2]
         Kernel driver in use: nvidia
+```
+
+#### Get the supported mdev mediatedDevices
+
+Change `GRID` to `NVIDIA` if not using GRID drivers
+
+```
+for pci in $(lspci | grep -i nvidia | awk '{print $1}'); do grep -r GRID "/sys/bus/pci/devices/0000:$pci/mdev_supported_types/" | awk -F'name:' '{print $2}'; done 2> /dev/null | sort -u
+```
+
+```
+for pci in $(lspci | grep -i nvidia | awk '{print $1}'); do grep -r 'GRID V100DX-2Q\|GRID V100DX-4Q\|GRID V100DX-8Q\|GRID V100DX-16Q' "/sys/bus/pci/devices/0000:$pci/mdev_supported_types/" | awk -F"/" '{print "- " $8}'; done 2> /dev/null | sort -u
 ```
