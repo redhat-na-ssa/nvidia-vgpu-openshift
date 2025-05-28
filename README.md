@@ -184,6 +184,35 @@ spec:
 
 After which, you should be able to create or modify a VM and add a GPU device.
 
+## Use a custom vGPU configuration
+
+So far we have been using the default configuration. If you want to set all GPUs in the node to a specific configuration you can just use the `nvidia.com/vgpu.config` label. However to do a custom configuration per GPU in a cluster you need to apply a ConfigMap and then reference it in the ClusterPolicy.
+
+Example in this repo:
+
+```
+oc apply -f configmap.yaml
+```
+
+```
+oc patch clusterpolicy gpu-cluster-policy --type=merge -p '{"spec":{"vgpuDeviceManager":{"config":{"name":"custom-vgpu-config"}}}}'
+```
+
+Then you can apply the configuration to a node:
+
+```
+oc label node ip-10-0-31-236.us-east-2.compute.internal nvidia.com/vgpu.config=T4-custom
+```
+
+```
+oc get nodes ip-10-0-31-236.us-east-2.compute.internal -o yaml | grep -A 12 allocatable| grep nvidia
+```
+```
+    nvidia.com/GRID_T4-8C: "2"
+    nvidia.com/GRID_T4-8Q: "12"
+    nvidia.com/GRID_T4-16C: "1"
+```
+
 ## Other Verification and Debugging steps
 
 ### Node labels
