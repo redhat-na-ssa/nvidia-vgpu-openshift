@@ -213,6 +213,92 @@ oc get nodes ip-10-0-31-236.us-east-2.compute.internal -o yaml | grep -A 12 allo
     nvidia.com/GRID_T4-16C: "1"
 ```
 
+## Testing in the VM
+
+The VM needs to use the GRID drivers which are used to communicate with the vGPU host driver. For this test I used `nvidia-linux-grid-570-570.133.20-1.x86_64.rpm`
+
+EPEL is required for DKMS:
+
+```
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+dnf install nvidia-linux-grid-570-570.133.20-1.x86_64.rpm
+```
+
+After which, we have the correct GPU available:
+
+```
+nvidia-smi
+```
+```
+Wed May 28 09:44:12 2025
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.133.20             Driver Version: 570.133.20     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  GRID T4-16C                    On  |   00000000:09:00.0 Off |                    0 |
+| N/A   N/A    P8            N/A  /  N/A  |       1MiB /  16384MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+```
+
+### Testing with PyTorch:
+
+Adding cuda-toolkit per docs: https://developer.nvidia.com/cuda-downloads
+
+```
+dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+dnf -y install cuda-toolkit-12-9
+```
+
+Creating a virtual environment and installing pytorch:
+
+```
+python3 -m venv env
+env/bin/pip install torch
+env/bin/pip install numpy
+```
+
+`test_torch.py`
+```
+import sys
+import torch
+
+def main():
+    print("Python Version:", sys.version)
+    print("Torch Version:", torch.__version__)
+    print("CUDA Available:", torch.cuda.is_available())
+    print("CUDA Device Count:", torch.cuda.device_count())
+
+    if torch.cuda.is_available():
+        print("CUDA Device Name:", torch.cuda.get_device_name(0))
+
+if __name__ == '__main__':
+    main()
+```
+
+```
+env/bin/python test_torch.py
+```
+```
+Python Version: 3.9.21 (main, Feb 10 2025, 00:00:00)
+[GCC 11.5.0 20240719 (Red Hat 11.5.0-5)]
+Torch Version: 2.7.0+cu126
+CUDA Available: True
+CUDA Device Count: 1
+CUDA Device Name: GRID T4-16C
+```
+
 ## Other Verification and Debugging steps
 
 ### gpu-operator must-gather
