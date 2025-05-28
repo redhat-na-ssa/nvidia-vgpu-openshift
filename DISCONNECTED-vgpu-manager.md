@@ -4,6 +4,9 @@ Date: May 21, 2025
 
 In order to support vgpu-manager with disconnected, we need to package the required RPMs into the vgpu-manager image. This requires changes to the upstream NVIDIA/container-images/driver repository
 
+> [!NOTE]
+> This fork of nvidia/driver should become obsolete once we have pciutils in the driver-toolkit: https://issues.redhat.com/browse/OCPBUGS-56571
+
 ## Get the updated code
 
 ```
