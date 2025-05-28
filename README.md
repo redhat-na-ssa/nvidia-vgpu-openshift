@@ -215,6 +215,14 @@ oc get nodes ip-10-0-31-236.us-east-2.compute.internal -o yaml | grep -A 12 allo
 
 ## Other Verification and Debugging steps
 
+### gpu-operator must-gather
+
+```
+curl -o must-gather.sh -L https://raw.githubusercontent.com/NVIDIA/gpu-operator/main/hack/must-gather.sh
+chmod +x must-gather.sh
+./must-gather.sh
+```
+
 ### Node labels
 
 Initially the gpu operator should label the node with:
