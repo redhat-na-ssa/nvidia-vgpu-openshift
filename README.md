@@ -424,14 +424,8 @@ f5:00.0 3D controller [0302]: NVIDIA Corporation TU104GL [Tesla T4] [10de:1eb8] 
         Kernel driver in use: nvidia
 ```
 
-#### Get the supported mdev mediatedDevices
-
-Change `GRID` to `NVIDIA` if not using GRID drivers
+#### Get the supported mediated devices types
 
 ```
-for pci in $(lspci | grep -i nvidia | awk '{print $1}'); do grep -r GRID "/sys/bus/pci/devices/0000:$pci/mdev_supported_types/" | awk -F'name:' '{print $2}'; done 2> /dev/null | sort -u
-```
-
-```
-for pci in $(lspci | grep -i nvidia | awk '{print $1}'); do grep -r 'GRID V100DX-2Q\|GRID V100DX-4Q\|GRID V100DX-8Q\|GRID V100DX-16Q' "/sys/bus/pci/devices/0000:$pci/mdev_supported_types/" | awk -F"/" '{print "- " $8}'; done 2> /dev/null | sort -u
+for pci in $(lspci | grep -i nvidia | awk '{print $1}'); do  find /sys/bus/pci/devices/0000:$pci/mdev_supported_types/ -name name -exec cat {} \;; done 2> /dev/null | sort -u
 ```
