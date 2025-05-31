@@ -56,8 +56,6 @@ spec:
         timeoutSeconds: 300
       waitForCompletion:
         timeoutSeconds: 0
-    repoConfig:
-      configMapName: 'ubi-repo-mirror'
     virtualTopology:
       config: ''
   devicePlugin:
@@ -97,6 +95,9 @@ spec:
     image: vgpu-manager
     repository: 'image-registry.openshift-image-registry.svc:5000/nvidia-gpu-operator'
     version: 570.133.10
+  vgpuDeviceManager:
+    config:
+      name: custom-vgpu-config
   vfioManager:
     enabled: true
   toolkit:

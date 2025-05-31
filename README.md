@@ -77,6 +77,11 @@ If the workload label was unset or set incorrectly you will have to remove the k
 (from the NVIDIA documentation)
 > If the node label nvidia.com/gpu.workload.config does not exist on the node, the GPU Operator assumes the default GPU workload configuration, container, and deploys the software components needed to support this workload type. To change the default GPU workload configuration, set the following value in ClusterPolicy: .sandboxWorkloads.defaultWorkload=<config>.
 
+The options are:
+* container
+* vm-passthrough
+* vm-vgpu
+
 ```sh
 oc label node ip-10-0-2-117.us-east-2.compute.internal --overwrite nvidia.com/gpu.workload.config=vm-vgpu
 ```
