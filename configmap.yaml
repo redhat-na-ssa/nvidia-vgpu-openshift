@@ -1,0 +1,23 @@
+# vgpuDeviceManager.config.name=custom-vgpu-config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-vgpu-config
+  namespace: nvidia-gpu-operator
+data:
+  config.yaml: |
+    version: v1
+    vgpu-configs:
+      T4-custom:
+        - devices: [0]
+          vgpu-devices:
+            "T4-16C": 1
+        - devices: [1]
+          vgpu-devices:
+            "T4-8C": 2
+        - devices: [2]
+          vgpu-devices:
+            "T4-8Q": 2
+        - devices: [3]
+          vgpu-devices:
+            "T4-8Q": 2
